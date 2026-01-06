@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发票提交表单</title>
+    <!-- Tailwind CSS v3 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#3b82f6',
+                        accent: '#dbeafe',
+                        neutral: '#f8fafc',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'button': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .form-input-focus {
+                @apply focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none;
+            }
+            .btn-primary {
+                @apply bg-primary text-white px-6 py-2 rounded-md hover:bg-primary/90 transition-all duration-300 shadow-button focus:ring-2 focus:ring-primary/50 focus:outline-none;
+            }
+            .btn-secondary {
+                @apply bg-white text-primary border border-primary px-6 py-2 rounded-md hover:bg-accent transition-all duration-300 shadow-button focus:ring-2 focus:ring-primary/50 focus:outline-none;
+            }
+            .card {
+                @apply bg-white rounded-lg shadow-card p-6 transition-all duration-300 hover:shadow-lg;
+            }
+            .form-label {
+                @apply block text-sm font-medium text-gray-700 mb-1;
+            }
+            .form-input {
+                @apply w-full px-4 py-2 border border-gray-300 rounded-md form-input-focus transition-all duration-300;
+            }
+            .form-error {
+                @apply text-red-500 text-sm mt-1;
+            }
+            .form-success {
+                @apply text-green-500 text-sm mt-1;
+            }
+            .file-upload-area {
+                @apply border-2 border-dashed border-gray-300 rounded-md p-6 text-center cursor-pointer hover:border-primary transition-all duration-300;
+            }
+            .file-upload-area.active {
+                @apply border-primary bg-accent/30;
+            }
+            .progress-bar {
+                @apply h-2 bg-gray-200 rounded-full overflow-hidden;
+            }
+            .progress-bar-fill {
+                @apply h-full bg-primary transition-all duration-300;
+            }
+            .fade-in {
+                animation: fadeIn 0.5s ease-in-out;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .slide-in {
+                animation: slideIn 0.3s ease-in-out;
+            }
+            @keyframes slideIn {
+                from { transform: translateX(-100%); }
+                to { transform: translateX(0); }
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 顶部导航 -->
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-file-text-o text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">会信财务系统</h1>
+            </div>
+            <a href="admin.html" class="btn-secondary text-sm">
+                <i class="fa fa-sign-in mr-1"></i> 管理员入口
+            </a>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- 表单卡片 -->
+        <div class="max-w-2xl mx-auto card fade-in">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">发票数据提交</h2>
+                <p class="text-gray-600">请填写以下信息并上传发票附件</p>
+            </div>
+
+            <!-- 表单 -->
+            <form id="invoiceForm" class="space-y-6">
+                <!-- 姓名 -->
+                <div class="space-y-1">
+                    <label for="name" class="form-label">姓名 <span class="text-red-500">*</span></label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        name="name" 
+                        class="form-input" 
+                        placeholder="请输入您的姓名" 
+                        required
+                    >
+                    <div id="nameError" class="form-error hidden">请输入有效的姓名</div>
+                </div>
+
+                <!-- 部门 -->
+                <div class="space-y-1">
+                    <label for="department" class="form-label">部门 <span class="text-red-500">*</span></label>
+                    <select 
+                        id="department" 
+                        name="department" 
+                        class="form-input" 
+                        required
+                    >
+                        <option value="">请选择部门</option>
+                        <option value="财务部">财务部</option>
+                        <option value="人力资源部">人力资源部</option>
+                        <option value="市场部">市场部</option>
+                        <option value="技术部">技术部</option>
+                        <option value="行政部">行政部</option>
+                        <option value="销售部">销售部</option>
+                        <option value="其他">其他</option>
+                    </select>
+                    <div id="departmentError" class="form-error hidden">请选择部门</div>
+                </div>
+
+                <!-- 发票金额 -->
+                <div class="space-y-1">
+                    <label for="amount" class="form-label">发票金额 (元) <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2.5 text-gray-500">¥</span>
+                        <input 
+                            type="number" 
+                            id="amount" 
+                            name="amount" 
+                            class="form-input pl-8" 
+                            placeholder="请输入发票金额" 
+                            min="0.01" 
+                            step="0.01" 
+                            required
+                        >
+                    </div>
+                    <div id="amountError" class="form-error hidden">请输入有效的金额</div>
+                </div>
+
+                <!-- 提交时间 -->
+                <div class="space-y-1">
+                    <label for="submitDate" class="form-label">提交时间 <span class="text-red-500">*</span></label>
+                    <input 
+                        type="date" 
+                        id="submitDate" 
+                        name="submitDate" 
+                        class="form-input" 
+                        required
+                    >
+                    <div id="dateError" class="form-error hidden">请选择有效的日期</div>
+                </div>
+
+                <!-- 发票附件 -->
+                <div class="space-y-1">
+                    <label for="invoiceFile" class="form-label">发票附件 <span class="text-red-500">*</span></label>
+                    <div 
+                        id="fileUploadArea" 
+                        class="file-upload-area"
+                    >
+                        <input 
+                            type="file" 
+                            id="invoiceFile" 
+                            name="invoiceFile" 
+                            class="hidden" 
+                            accept=".jpg,.jpeg,.png,.pdf" 
+                            required
+                        >
+                        <div id="uploadPlaceholder">
+                            <i class="fa fa-cloud-upload text-4xl text-gray-400 mb-2"></i>
+                            <p class="text-gray-600 mb-1">点击或拖拽文件到此处上传</p>
+                            <p class="text-gray-500 text-sm">支持 JPG、PNG、PDF 格式，最大 10MB</p>
+                        </div>
+                        <div id="filePreview" class="hidden">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <i id="fileIcon" class="fa fa-file-o text-primary text-xl"></i>
+                                    <span id="fileName" class="text-gray-800 truncate max-w-[200px]"></span>
+                                </div>
+                                <button 
+                                    type="button" 
+                                    id="removeFile" 
+                                    class="text-red-500 hover:text-red-700 transition-colors"
+                                >
+                                    <i class="fa fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="progress-bar mt-2">
+                                <div id="uploadProgress" class="progress-bar-fill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="fileError" class="form-error hidden">请上传有效的发票文件</div>
+                </div>
+
+                <!-- 备注 -->
+                <div class="space-y-1">
+                    <label for="notes" class="form-label">备注</label>
+                    <textarea 
+                        id="notes" 
+                        name="notes" 
+                        rows="3" 
+                        class="form-input" 
+                        placeholder="请输入备注信息（可选）"
+                    ></textarea>
+                </div>
+
+                <!-- 提交按钮 -->
+                <div class="pt-4">
+                    <button 
+                        type="submit" 
+                        id="submitBtn" 
+                        class="btn-primary w-full flex items-center justify-center space-x-2"
+                    >
+                        <span>提交发票</span>
+                        <i class="fa fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 提交成功提示 -->
+        <div id="successModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black/50 hidden">
+            <div class="card max-w-md w-full mx-4 slide-in">
+                <div class="text-center py-4">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-500 mb-4">
+                        <i class="fa fa-check-circle text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-2">提交成功！</h3>
+                    <p class="text-gray-600 mb-6">您的发票信息已成功提交，感谢您的配合。</p>
+                    <div class="flex space-x-4">
+                        <button id="newSubmission" class="btn-primary flex-1">
+                            <i class="fa fa-plus mr-1"></i> 新提交
+                        </button>
+                        <button id="closeModal" class="btn-secondary flex-1">
+                            <i class="fa fa-times mr-1"></i> 关闭
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 底部信息 -->
+    <footer class="bg-white border-t mt-12">
+        <div class="container mx-auto px-4 py-6">
+            <div class="text-center text-gray-600 text-sm">
+                <p>© 2025 发票提交系统 | 技术支持</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 全局变量
+        let formData = [];
+        let currentFile = null;
+
+        // DOM 元素
+        const form = document.getElementById('invoiceForm');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileInput = document.getElementById('invoiceFile');
+        const filePreview = document.getElementById('filePreview');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const fileName = document.getElementById('fileName');
+        const fileIcon = document.getElementById('fileIcon');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const removeFileBtn = document.getElementById('removeFile');
+        const successModal = document.getElementById('successModal');
+        const newSubmissionBtn = document.getElementById('newSubmission');
+        const closeModalBtn = document.getElementById('closeModal');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // 表单字段
+        const nameInput = document.getElementById('name');
+        const departmentInput = document.getElementById('department');
+        const amountInput = document.getElementById('amount');
+        const dateInput = document.getElementById('submitDate');
+        const notesInput = document.getElementById('notes');
+        
+        // 错误提示
+        const nameError = document.getElementById('nameError');
+        const departmentError = document.getElementById('departmentError');
+        const amountError = document.getElementById('amountError');
+        const dateError = document.getElementById('dateError');
+        const fileError = document.getElementById('fileError');
+
+        // 初始化
+        function init() {
+            // 设置默认日期为今天
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+            
+            // 加载本地存储的数据
+            loadFormData();
+            
+            // 绑定事件
+            bindEvents();
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 文件上传区域点击事件
+            fileUploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            // 文件拖放事件
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('active');
+            });
+
+            fileUploadArea.addEventListener('dragleave', () => {
+                fileUploadArea.classList.remove('active');
+            });
+
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('active');
+                
+                if (e.dataTransfer.files.length) {
+                    handleFile(e.dataTransfer.files[0]);
+                }
+            });
+
+            // 文件选择事件
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length) {
+                    handleFile(fileInput.files[0]);
+                }
+            });
+
+            // 移除文件按钮
+            removeFileBtn.addEventListener('click', () => {
+                resetFileUpload();
+            });
+
+            // 表单提交事件
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (validateForm()) {
+                    submitForm();
+                }
+            });
+
+            // 表单验证事件
+            nameInput.addEventListener('input', () => validateField(nameInput, nameError, isValidName));
+            departmentInput.addEventListener('change', () => validateField(departmentInput, departmentError, isValidDepartment));
+            amountInput.addEventListener('input', () => validateField(amountInput, amountError, isValidAmount));
+            dateInput.addEventListener('change', () => validateField(dateInput, dateError, isValidDate));
+
+            // 成功模态框事件
+            newSubmissionBtn.addEventListener('click', () => {
+                successModal.classList.add('hidden');
+                resetForm();
+            });
+
+            closeModalBtn.addEventListener('click', () => {
+                successModal.classList.add('hidden');
+            });
+        }
+
+        // 处理文件上传
+        function handleFile(file) {
+            // 检查文件类型
+            const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+            if (!validTypes.includes(file.type)) {
+                showError(fileError, '请上传 JPG、PNG 或 PDF 格式的文件');
+                return;
+            }
+
+            // 检查文件大小 (10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showError(fileError, '文件大小不能超过 10MB');
+                return;
+            }
+
+            // 清除错误
+            hideError(fileError);
+            
+            // 保存当前文件
+            currentFile = file;
+            
+            // 更新文件预览
+            fileName.textContent = file.name;
+            
+            // 设置文件图标
+            if (file.type === 'application/pdf') {
+                fileIcon.className = 'fa fa-file-pdf-o text-primary text-xl';
+            } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
+                fileIcon.className = 'fa fa-file-image-o text-primary text-xl';
+            }
+            
+            // 显示预览，隐藏占位符
+            filePreview.classList.remove('hidden');
+            uploadPlaceholder.classList.add('hidden');
+            
+            // 模拟上传进度
+            simulateUploadProgress();
+        }
+
+        // 模拟上传进度
+        function simulateUploadProgress() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 20;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                }
+                uploadProgress.style.width = `${progress}%`;
+            }, 300);
+        }
+
+        // 重置文件上传区域
+        function resetFileUpload() {
+            currentFile = null;
+            fileInput.value = '';
+            filePreview.classList.add('hidden');
+            uploadPlaceholder.classList.remove('hidden');
+            uploadProgress.style.width = '0%';
+            hideError(fileError);
+        }
+
+        // 表单验证
+        function validateForm() {
+            const isNameValid = validateField(nameInput, nameError, isValidName);
+            const isDepartmentValid = validateField(departmentInput, departmentError, isValidDepartment);
+            const isAmountValid = validateField(amountInput, amountError, isValidAmount);
+            const isDateValid = validateField(dateInput, dateError, isValidDate);
+            const isFileValid = validateField(fileInput, fileError, isValidFile);
+            
+            return isNameValid && isDepartmentValid && isAmountValid && isDateValid && isFileValid;
+        }
+
+        // 字段验证通用函数
+        function validateField(input, errorElement, validationFunction) {
+            const value = input.value;
+            if (!validationFunction(value)) {
+                showError(errorElement, getErrorMessage(input));
+                input.classList.add('border-red-500');
+                return false;
+            } else {
+                hideError(errorElement);
+                input.classList.remove('border-red-500');
+                return true;
+            }
+        }
+
+        // 验证函数
+        function isValidName(name) {
+            return name.trim().length >= 2;
+        }
+
+        function isValidDepartment(department) {
+            return department !== '';
+        }
+
+        function isValidAmount(amount) {
+            return !isNaN(amount) && parseFloat(amount) > 0;
+        }
+
+        function isValidDate(date) {
+            const selectedDate = new Date(date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return selectedDate <= today;
+        }
+
+        function isValidFile(file) {
+            return currentFile !== null;
+        }
+
+        // 获取错误信息
+        function getErrorMessage(input) {
+            switch (input.id) {
+                case 'name':
+                    return '请输入有效的姓名（至少2个字符）';
+                case 'department':
+                    return '请选择部门';
+                case 'amount':
+                    return '请输入有效的金额（大于0）';
+                case 'submitDate':
+                    return '请选择有效的日期（不能超过今天）';
+                case 'invoiceFile':
+                    return '请上传发票文件';
+                default:
+                    return '请输入有效值';
+            }
+        }
+
+        // 显示错误
+        function showError(errorElement, message) {
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+
+        // 隐藏错误
+        function hideError(errorElement) {
+            errorElement.classList.add('hidden');
+        }
+
+        // 提交表单
+        function submitForm() {
+            // 显示加载状态
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 提交中...';
+            
+            // 创建表单数据对象
+            const formData = {
+                id: generateId(),
+                name: nameInput.value.trim(),
+                department: departmentInput.value,
+                amount: parseFloat(amountInput.value),
+                date: dateInput.value,
+                notes: notesInput.value.trim(),
+                fileName: currentFile ? currentFile.name : '',
+                fileType: currentFile ? currentFile.type : '',
+                fileSize: currentFile ? currentFile.size : 0,
+                timestamp: new Date().toISOString()
+            };
+            
+            // 模拟异步提交
+            setTimeout(() => {
+                // 保存到本地存储
+                saveFormData(formData);
+                
+                // 恢复按钮状态
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>提交发票</span><i class="fa fa-paper-plane"></i>';
+                
+                // 显示成功模态框
+                successModal.classList.remove('hidden');
+            }, 1500);
+        }
+
+        // 生成唯一ID
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+        }
+
+        // 保存表单数据到本地存储
+        function saveFormData(data) {
+            try {
+                // 获取现有数据
+                let existingData = JSON.parse(localStorage.getItem('invoiceFormData')) || [];
+                
+                // 添加新数据
+                existingData.push(data);
+                
+                // 保存回本地存储
+                localStorage.setItem('invoiceFormData', JSON.stringify(existingData));
+                
+                // 更新全局变量
+                formData = existingData;
+            } catch (error) {
+                console.error('保存数据失败:', error);
+            }
+        }
+
+        // 从本地存储加载表单数据
+        function loadFormData() {
+            try {
+                formData = JSON.parse(localStorage.getItem('invoiceFormData')) || [];
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                formData = [];
+            }
+        }
+
+        // 重置表单
+        function resetForm() {
+            form.reset();
+            resetFileUpload();
+            
+            // 重置日期为今天
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+            
+            // 清除所有错误提示
+            [nameError, departmentError, amountError, dateError, fileError].forEach(hideError);
+            
+            // 清除所有输入框的错误样式
+            [nameInput, departmentInput, amountInput, dateInput].forEach(input => {
+                input.classList.remove('border-red-500');
+            });
+        }
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
